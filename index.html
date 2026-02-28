@@ -14,7 +14,6 @@
       min-height: 100vh;
       margin: 0;
       flex-direction: column;
-      gap: 16px;
       padding: 24px;
       box-sizing: border-box;
     }
@@ -54,21 +53,32 @@
 </div>
 
 <script>
-  const params = new URLSearchParams(window.location.search);
-  const name = params.get('name') || 'My App';
-  const html = params.get('html') || '';
+  // Use location.search to get raw query string
+  const raw = window.location.search.substring(1);
+  const pairs = raw.split('&');
+  const params = {};
+  pairs.forEach(p => {
+    const idx = p.indexOf('=');
+    if (idx > -1) {
+      params[decodeURIComponent(p.substring(0, idx))] = decodeURIComponent(p.substring(idx + 1));
+    }
+  });
+
+  const name = params['name'] || 'My App';
+  const html = params['html'] || '';
 
   document.getElementById('appname').textContent = '📦 ' + name;
   document.getElementById('openBtn').textContent = 'Open "' + name + '" in MiniShell';
 
+  // Build deep link
   const deeplink = 'minishell://create?name=' + encodeURIComponent(name) + '&html=' + encodeURIComponent(html);
   document.getElementById('openBtn').href = deeplink;
 
-  // Auto-redirect on mobile
+  // Auto redirect on iPhone
   if (/iPhone|iPad/.test(navigator.userAgent)) {
-    setTimeout(() => {
+    setTimeout(function() {
       window.location.href = deeplink;
-      setTimeout(() => {
+      setTimeout(function() {
         document.getElementById('status').textContent = 'If MiniShell did not open, tap the button above.';
       }, 2000);
     }, 800);
